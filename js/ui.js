@@ -1,67 +1,29 @@
-/*document.getElementById("username").addEventListener("blur", function () {
-    validateInputByRegex(this,
-        "Username must starts with upper-case letter, can consists only latin letters, digits and underscore, length 5-15 chars.",
-        /^[A-Z][a-zA-Z_0-9]{4,14}$/
-    );
+document.getElementById("count").addEventListener("blur", function () {
+    var min_div = document.getElementById("min-group");
+    var max_div = document.getElementById("max-group");
+    var target_index = parseInt(this.value);
+    if (target_index == max_div.childElementCount - 1) {
+        return;
+    }
+    while (min_div.childElementCount > 1) {
+        min_div.removeChild(min_div.lastChild);
+        max_div.removeChild(max_div.lastChild);
+    }
+    if (target_index < 1 || target_index > 10) {
+        target_index = 2;
+        this.value = 2;
+    }
+    for (var i = 0; i < target_index; i++) {
+        var min_val = document.createElement("div");
+        min_val.className = "col-sm-1";
+        min_val.innerHTML = '<input required type="text" class="form-control decimal-input" id="min-' + i + '" placeholder="Min ' + (i + 1) + '">'
+        var max_val = document.createElement("div");
+        max_val.className = "col-sm-1";
+        max_val.innerHTML = '<input required type="text" class="form-control decimal-input" id="max-' + i + '" placeholder="Max ' + (i + 1) + '">'
+        min_div.appendChild(min_val);
+        max_div.appendChild(max_val);
+    }
 });
-
-document.getElementById("password").addEventListener("blur", function () {
-    var elem = this;
-    validateInputByCondition(this,
-        "Password must contain at least one upper-case and lower-case letter, at least one digit, length 6-60 chars.",
-        function () {
-            return elem.value.length >= 6
-                && elem.value.length <= 60
-                && hasUppercaseChar(elem.value)
-                && hasLowercaseChar(elem.value)
-                && hasNumber(elem.value)
-        })
-});
-
-document.getElementById("password-confirm").addEventListener("blur", function () {
-    var elem = this;
-    validateInputByCondition(this,
-        "Passwords not match.",
-        function () {
-            return elem.value === document.getElementById("password").value
-        })
-});
-
-document.getElementById("first-name").addEventListener("blur", function () {
-    validateInputByRegex(this,
-        "First name is one or more words started with capital letter",
-        /^[A-Z][a-zA-Z]+(\s+?[A-Z][a-zA-Z]+)*?$/
-    );
-});
-
-document.getElementById("last-name").addEventListener("blur", function () {
-    validateInputByRegex(this,
-        "Last name is one or more words started with capital letters and separates with dashes",
-        /^[A-Z][a-zA-Z]+(-[A-Z][a-zA-Z]+)*?$/
-    );
-});
-
-document.getElementById("age").addEventListener("blur", function () {
-    var elem = this;
-    validateInputByCondition(this,
-        "Age must be in range 7-120",
-        function () {
-            return elem.value >= 7 && elem.value <= 120
-        }
-    );
-});
-
-// эта валидация понятное дело не очень идеальная,
-// по хорошему надо каждый элемент адреса валидировать отдельно в разных полях
-document.getElementById("shipment").addEventListener("blur", function () {
-    validateInputByRegex(this,
-        'Invalid shipment format. Correct is: "Address, City, State, PostalCode (like 220123), Country"',
-        /^.*?,\s*?[A-Z]\w+\s*?,\s*?[A-Z]\w+\s*?,\s*?[0-9]{6}\s*?,\s*?[A-Z]\w+$/
-    );
-});
-
-*/
-
 
 document.getElementById("add-criterion").addEventListener("click", function () {
     var criterion_div = document.getElementById("criterion-group");
@@ -79,14 +41,13 @@ document.getElementById("add-criterion").addEventListener("click", function () {
     criterion_div.appendChild(criterionNode);
     var lambdaNode = document.createElement("div");
     lambdaNode.className = "col-sm-1";
-    lambdaNode.innerHTML = '<input required type="text" class="form-control decimal-input" id="lambda-' + index + '" placeholder="&lambda;-' + (index + 1) + '">'
+    lambdaNode.innerHTML = '<input required type="number" min="1" max="9" class="form-control" id="lambda-' + index + '" placeholder="&lambda;-' + (index + 1) + '">'
     document.getElementById("lambda-group").appendChild(lambdaNode);
     document.getElementById("remove-criterion").removeAttribute("disabled");
     if (index == 9) {
         this.setAttribute("disabled","disabled");
     }
 });
-
 document.getElementById("remove-criterion").addEventListener("click", function () {
     if(this.disabled) {
         return;
@@ -104,21 +65,6 @@ document.getElementById("remove-criterion").addEventListener("click", function (
         document.getElementById("add-criterion").removeAttribute("disabled");
     }
 });
-
-document.getElementById("input-form").addEventListener("submit", function (e) {
-    this.style.display = 'none';
-    document.getElementById("result-form").style.display = 'block';
-    e.preventDefault();
-    return false;
-});
-
-document.getElementById("back-button").addEventListener("click", function (e) {
-    document.getElementById("result-form").style.display = 'none';
-    document.getElementById("input-form").style.display = 'block';
-    e.preventDefault();
-    return false;
-});
-
 
 jQuery('.decimal-input').keyup(function (e) {
     if(($(this).val().split(".")[0]).indexOf("00")>-1){
