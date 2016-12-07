@@ -1,41 +1,60 @@
 document.getElementById("input-form").addEventListener("submit", function (e) {
     initCalculation();
-    publishProgress(1, "Collecting data...");
+    publishProgress(1);
     var functions = evalCriterionFunctions();
     var lambdas = collectLambdas();
     var arguments = getArguments();
-    publishProgress(5, "Getting all possible argument corteges...");
+    publishProgress(5);
     var corteges = cartesianProduct(arguments);
-    publishProgress(25, "Calculating all criterions values...");
+    publishProgress(25);
     var criterionsValues = calculateCriterions(corteges, functions);
-    publishProgress(40, "Extracting Pareto points...");
-    var paretoPoints = extractParetoPoints(criterionsValues);
-    //switchScreen(false);
+    publishProgress(40);
+    var phis = calculateScalarCriterions(lambdas, criterionsValues);
+    var minScalarCriterions = valueAndIndexesOfMin(phis);
+    var result = {};
+    result['phi'] = minScalarCriterions[0];
+    result['corteges'] = [];
+    for (var i = 1; i < minScalarCriterions.length; i++) {
+        result['corteges'].push(corteges[minScalarCriterions[i]]);
+    }
+    result['lambdas'] = lambdas;
+
+
+    switchState(false);
     e.preventDefault();
     return false;
 });
 
 document.getElementById("back-button").addEventListener("click", function (e) {
-    switchScreen(true);
+    switchState(true);
     e.preventDefault();
     return false;
 });
 
-function extractParetoPoints(criterionValues) {
-    var mins = [];
-    for (var i = 0; i < criterionValues.length; i++) {
-        mins.push(getMinOfArray(criterionValues[i]));
+function assocArrayToString(arr) {
+    var s = "{";
+    for (var key in arr) {
+        if (arr.hasOwnProperty(key)) {
+            s += key + ' : [' + arr[key] + "], ";
+        }
     }
-
+    s = s.substring(0, s.length - 2);
+    s += "}";
+    return s;
 }
 
-function getMaxOfArray(numArray) {
-    return Math.max.apply(null, numArray);
+function calculateScalarCriterions(lambdas, criterionsValues) {
+    var phis = [];
+    for (var i = 0; i < criterionsValues[0].length; i++) {
+        var phi = 0;
+        for (var j = 0; j < lambdas.length; j++) {
+            phi += lambdas[j] * criterionsValues[j][i];
+        }
+        phis.push(phi);
+    }
+    return phis;
 }
 
-function getMinOfArray(numArray) {
-    return Math.min().apply(null, numArray);
-}
 
 function calculateCriterions(corteges, functions) {
     var results = [];
@@ -44,9 +63,34 @@ function calculateCriterions(corteges, functions) {
         for (var j = 0; j < corteges.length; j++) {
             results[i].push(functions[i](corteges[j]));
         }
-        publishProgress(35, "Criterion " + i + " has been calculated.");
     }
     return results;
+}
+
+function valueAndIndexesOfMin(arr) {
+    if (arr.length === 0) {
+        return -1;
+    }
+
+    if (arr.length === 1) {
+        return [arr[0], 0];
+    }
+
+    const PRECISION = 0.00001;
+    var result = [arr[0], 0];
+    for (var i = 1; i < arr.length; i++) {
+        if (Math.abs(arr[i] - result[0]) < PRECISION) {
+            result.push(i);
+        } else {
+            if (arr[i] < result[0]) {
+                result = [];
+                result[0] = arr[i];
+                result[1] = i;
+            }
+        }
+    }
+
+    return result;
 }
 
 function cartesianProduct(matrix) {
@@ -63,7 +107,7 @@ function cartesianProduct(matrix) {
         }
         result.push(cr.reverse());
         if (j % updateValue == 0) {
-            publishProgress(++currPercent, "Getting all possible argument corteges...");
+            publishProgress(++currPercent);
         }
     }
     return result;
@@ -83,6 +127,10 @@ function collectLambdas() {
     var lambdas = [];
     for (var i = 0; i < count; i++) {
         lambdas[i] = (document.getElementById('lambda-' + i).value);
+    }
+    var sum = lambdas.reduce((a, b) => parseInt(a) + parseInt(b), 0);
+    for (i = 0; i < lambdas.length; i++) {
+        lambdas[i] = parseInt(lambdas[i]) / sum;
     }
     return lambdas;
 }
@@ -138,30 +186,33 @@ function evalCriterionFunctions() {
 }
 
 function getCriterionFunction(criterionString) {
-    criterionString = criterionString.replace(/[xX](\d+)\^(\d+)/, 'Math.pow(x[$1], $2)');
+    criterionString = criterionString.replace(/([xX]\d+|\(.*?\))\^(\d+)/g, 'Math.pow($1, $2)');
+    criterionString = criterionString.replace(/[xX](\d+)/g, (full, n) => 'x[' + (Number(n) - 1) + ']');
     return eval('(function (x) { return ' + criterionString + ';})');
 }
 
-function publishProgress(progress, status) {
+function publishProgress(progress) {
     window.setTimeout(function () {
-        $('#progressbar').attr('aria-valuenow', progress).css('width', progress + '%').text(progress + '% ' + status);
+        $('#progressbar').attr('aria-valuenow', progress).css('width', progress + '%').text(progress + '%');
     }, 50);
 }
 
 function initCalculation() {
     $("#input-form").find(":input").prop('readonly', true);
+    $('#calculate-button').prop('disabled', true);
     $('#progress-group').css('display', 'block');
     $('#progressbar').css('width', '0%');
-    publishProgress(0, "Let's start!");
+    publishProgress(0);
 }
 
-function switchScreen(isInput) {
+function switchState(isInput) {
     if (isInput) {
         $('#progress-group').css('display', 'none');
         $('#input-form').css('display', 'block').find(":input").prop('readonly', false);
+        $('#calculate-button').prop('disabled', false);
         $('#result-form').css('display', 'none');
     } else {
-        $('#input-form').css('display', 'none');
+        $('#progress-group').css('display', 'none');
         $('#result-form').css('display', 'block');
     }
 }

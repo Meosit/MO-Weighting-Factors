@@ -66,7 +66,7 @@ document.getElementById("remove-criterion").addEventListener("click", function (
     }
 });
 
-jQuery('.decimal-input').keyup(function (e) {
+jQuery('.decimal-input-dis').keyup(function (e) {
     if(($(this).val().split(".")[0]).indexOf("00")>-1){
         $(this).val($(this).val().replace("00","0"));
     } else {
@@ -78,33 +78,8 @@ jQuery('.decimal-input').keyup(function (e) {
     }
 });
 
-function validateCriterion(inputElement, index) {
-    validateInputByRegex(inputElement,
-        "Invalid criterion " + index + " format.",
-        /^(-?\d+\*)?(([xX]\d+)|\d+)(\^\d+)?([+\-*/](-?\d+\*)?(([xX]\d+)|\d+)(\^\d+)?)*$/
-    );
-}
-
 function validateInputByRegex(inputElement, errorMessage, regex) {
     if (regex.test(inputElement.value.trim()) || inputElement.value.trim() === "") {
-        if (inputElement.value.trim() === "") {
-            inputElement.style.removeProperty("background-color");
-        } else {
-            inputElement.style.backgroundColor = "#dff0d8";
-        }
-        if (document.getElementById(inputElement.id + "-error-div") != null) {
-            removeErrorMessageDiv(inputElement.id + "-error-div");
-        }
-    } else {
-        inputElement.style.backgroundColor = "#f2dede";
-        if (document.getElementById(inputElement.id + "-error-div") == null) {
-            addErrorMessageDiv(inputElement.id + "-error-div", errorMessage);
-        }
-    }
-}
-
-function validateInputByCondition(inputElement, errorMessage, conditionFunction) {
-    if (conditionFunction() || inputElement.value.trim() === "") {
         if (inputElement.value.trim() === "") {
             inputElement.style.removeProperty("background-color");
         } else {
@@ -134,20 +109,4 @@ function removeErrorMessageDiv(id) {
     if (elem != null) {
         elem.remove();
     }
-}
-
-Element.prototype.remove = function () {
-    this.parentElement.removeChild(this);
-};
-
-function hasUppercaseChar(str) {
-    return str.toLowerCase() != str.value;
-}
-
-function hasLowercaseChar(str) {
-    return str.toLowerCase() != str.value;
-}
-
-function hasNumber(str) {
-    return /\d/.test(str);
 }
