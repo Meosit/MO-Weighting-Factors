@@ -1,7 +1,8 @@
 document.getElementById("input-form").addEventListener("submit", function (e) {
     initCalculation();
     publishProgress(1);
-    var functions = evalCriterionFunctions();
+    var criterionStrings = collectCriterions();
+    var functions = evalCriterionFunctions(criterionStrings);
     var lambdas = collectLambdas();
     var arguments = getArguments();
     publishProgress(5);
@@ -19,7 +20,10 @@ document.getElementById("input-form").addEventListener("submit", function (e) {
     }
     result['lambdas'] = lambdas;
 
-
+    printLambdas(lambdas);
+    printPhi(minScalarCriterions[0]);
+    printCriterionHead(criterionStrings);
+    printCortegesAndCriterions(corteges, criterionsValues, minScalarCriterions);
     switchState(false);
     e.preventDefault();
     return false;
@@ -30,6 +34,49 @@ document.getElementById("back-button").addEventListener("click", function (e) {
     e.preventDefault();
     return false;
 });
+
+function printLambdas(lambdas) {
+    var outputString = '';
+    for (var i = 0; i < lambdas.length; i++) {
+        outputString += '&lambda;<sub>' + (i + 1) + '</sub> = ' + lambdas[i].toFixed(3) + '; ';
+    }
+    outputString = outputString.substring(0, outputString.length - 2);
+    $('#lambdas-output').html(outputString);
+}
+
+function printPhi(phi) {
+    $('#phi-output').text(phi.toFixed(3));
+}
+
+function printCriterionHead(criterions) {
+    $('#table-head').html('<th>X</th>');
+    for (var i = 0; i < criterions.length; i++) {
+        var criterion = '&Phi;<sub>' + (i + 1) + '</sub>(X) = ' + criterions[i];
+        $('#table-head').append('<th>' + criterion + '</th>');
+    }
+}
+
+function printCortegesAndCriterions(corteges, criterionValues, indexes) {
+    $('#table-body').html('');
+    for (var i = 1; i < indexes.length; i++) {
+        var outputRow = '<tr>' + '<th>' + toFixedStringArray(corteges[indexes[i]]) + '</th>';
+        for (var j = 0; j < criterionValues.length; j++) {
+            outputRow += '<th>' + criterionValues[j][indexes[i]].toFixed(3) + '</th>';
+        }
+        outputRow += '</tr>';
+        $('#table-body').append(outputRow);
+    }
+}
+
+function toFixedStringArray(arr) {
+    var x = 0;
+    var len = arr.length;
+    while (x < len) {
+        arr[x] = arr[x].toFixed(3);
+        x++
+    }
+    return '(' + arr.toString().replace(/,/g, ', ') + ')';
+}
 
 function assocArrayToString(arr) {
     var s = "{";
@@ -176,8 +223,7 @@ function collectArgumentCount() {
     return parseInt($('#count').val());
 }
 
-function evalCriterionFunctions() {
-    var criterionStrings = collectCriterions();
+function evalCriterionFunctions(criterionStrings) {
     var criterionFunctions = [];
     for (var i = 0; i < criterionStrings.length; i++) {
         criterionFunctions[i] = getCriterionFunction(criterionStrings[i]);
@@ -210,9 +256,11 @@ function switchState(isInput) {
         $('#progress-group').css('display', 'none');
         $('#input-form').css('display', 'block').find(":input").prop('readonly', false);
         $('#calculate-button').prop('disabled', false);
+        $('#back-button').css('display', 'none');
         $('#result-form').css('display', 'none');
     } else {
         $('#progress-group').css('display', 'none');
+        $('#back-button').css('display', 'block');
         $('#result-form').css('display', 'block');
     }
 }

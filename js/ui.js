@@ -34,7 +34,7 @@ document.getElementById("add-criterion").addEventListener("click", function () {
     var criterionNode = document.createElement("div");
     criterionNode.className = "form-group";
     criterionNode.innerHTML =
-        '<label class="control-label col-sm-1" for="criterion-' + index + '">&straightphi;-' + (index + 1) + ':</label>\
+        '<label class="control-label col-sm-1" for="criterion-' + index + '">&Phi;-' + (index + 1) + ':</label>\
         <div class="col-sm-10">\
             <input required type="text" class="form-control" id="criterion-' + index + '" placeholder="x1^2+x2^2">\
         </div>';
